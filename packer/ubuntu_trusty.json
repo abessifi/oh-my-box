@@ -1,0 +1,72 @@
+{
+  "variables": {
+    "ubuntu_major_version": "14.04",
+	"ubuntu_minor_version": "3"
+  },
+  "provisioners": [
+	{
+	  "type": "shell",
+	  "environment_vars": [ "ANSIBLE_VERSION=1.9.2" ],
+	  "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+	  "script": "scripts/setup.sh"
+	},
+	{
+	  "type": "ansible-local",
+	  "playbook_file": "ansible/provision.yml",
+	  "role_paths": [
+		"ansible/roles/common"
+	  ]
+	},
+	{
+	  "type": "shell",
+	  "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+	  "script": "scripts/cleanup.sh"
+	}
+  ],
+  "builders": [
+	{
+	  "type": "virtualbox-iso",
+	  "boot_command": [
+		"<esc><wait>",
+		"<esc><wait>",
+		"<enter><wait>",
+		"/install/vmlinuz",
+		" auto=true",
+		" priority=critical",
+		" initrd=/install/initrd.gz",
+		" preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu_trusty_preseed.cfg",
+		" -- ",
+		"<enter>"
+	  ],
+	  "boot_wait": "10s",
+	  "guest_os_type": "Ubuntu_64",
+	  "headless": true,
+	  "http_directory": "http",
+	  "iso_urls": [
+		"http://releases.ubuntu.com/{{user `ubuntu_major_version`}}/ubuntu-{{user `ubuntu_major_version`}}.{{user `ubuntu_minor_version`}}-server-amd64.iso"
+	  ],
+	  "iso_checksum_type": "md5",
+	  "iso_checksum": "9e5fecc94b3925bededed0fdca1bd417",
+	  "ssh_username": "vagrant",
+	  "ssh_password": "vagrant",
+	  "ssh_port": 22,
+	  "ssh_wait_timeout": "10000s",
+	  "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
+	  "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+	  "virtualbox_version_file": ".vbox_version",
+	  "vm_name": "packer-ubuntu-{{user `ubuntu_major_version`}}-amd64",
+	  "disk_size": 32768,
+	  "vboxmanage": [
+		[ "modifyvm", "{{.Name}}", "--memory", "512" ],
+		[ "modifyvm", "{{.Name}}", "--cpus", "2"]
+	  ],
+	  "output_directory": ".builders-output/"
+	}
+  ],
+  "post-processors": [
+	{
+	  "type": "vagrant",
+	  "output": "builds/packer_ubuntu-{{user `ubuntu_major_version`}}-amd64_{{.Provider}}.box"
+	}
+  ]
+}
