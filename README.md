@@ -1,39 +1,42 @@
-`Oh-My-Box` is a set of [Packer](www.packer.io) templates, [Ansible](www.ansible.com) playbooks and Shell scripts which can be used to prepare a bunch of [Vagrant](www.vagrantup.com) boxes (based on other GNU/Linux minimal images). The created boxes can be used, for example, to develop and test Ansible roles on different `GNU/Linux` distributions. Yes, Ansible roles compatibility matters !
-
 ## Description
 
-For instance, the idea may be to prepare a basic vagrant boxes with specific `Ansible` and stable `Ruby` versions which can be used, for example, to run [test-kitchen](http://kitchen.ci):
-
-- Create a virtual environment
-- Install the Ansible role to be tested
-- Run Ansible to provision the target environment
-- Run all acceptance tests (using [serverspec](http://serverspec.org/) for instance)
-
-`Oh-My-Box` uses Packer and Vagrant tools to:
+`Oh-My-Box` is a set of [Packer](www.packer.io) templates, [Ansible](www.ansible.com) playbooks and Shell scripts which can be used to prepare a bunch of [Vagrant](www.vagrantup.com) boxes (based on a minimal GNU/Linux images). `Oh-My-Box` uses Packer and Vagrant tools to:
 
 - Download a minimal image
-- Create a virtual machine (Actually, only Virtualbox is supported)
-- Provision it using Ansible ;)
+- Create a virtual machine (Actually, only Virtualbox provider is supported)
+- Provision it using Ansible
 - Package the VM to a new Vagrant box
-- Add/Push the new created box to the Vagrant local/remote repository
+- Add the new created box to the Vagrant local repository
 
 ## Requirements
 
 - Virtualbox (tested with 5.0)
 - Packer (>= v0.8.6)
 - Vagrant (>= v1.7)
-- Ansible (tested with v1.9)
+
+## Test case
+
+The created boxes can be used, for example, to develop and test Ansible roles on different `GNU/Linux` distributions. Yes, Ansible roles compatibility matters !
+For instance, the idea may be to prepare a basic Vagrant boxes with specific `Ansible` and `Ruby` versions which can be used, for example, to run acceptance tests against the Ansible role using [test-kitchen](http://kitchen.ci):
+
+- Create a virtual environment
+- Install the Ansible role to be tested
+- Run Ansible to provision the target environment
+- Run all acceptance tests (using [serverspec](http://serverspec.org/) for instance)
+
 
 ## Usage
 
-Run the script `oh-my-box.sh` which gets the basic vagrant boxes names to provision from the script arguments:
+If the boxes you want to use exist already in the [Vagrant Cloud](https://atlas.hashicorp.com/boxes/search?vagrantcloud), just run the script `oh-my-box.sh` which gets their names from the script arguments and checks them out.
+
+Otherwise, if the boxes list didn't exist, `oh-my-box` will create them for you based on the specified distros names.
 
 	$ ./oh-my-box.sh [options]
 
-After provisioning the VMs with specific Ansible and Ruby versions, the script generates new vagrant boxes:
+After provisioning and packaging, new Vagrant boxes are generated. E.g:
 
-	debian/jessie64   =>  <system_username>/jessie64-ansible
-	bento/centos-7.1  =>  <system_username>/centos-7.1-ansible
+	<system_username>/debian-jessie-ansible
+	<system_username>/centos-7.1-ansible
 
 ### Options
 
@@ -47,40 +50,18 @@ After provisioning the VMs with specific Ansible and Ruby versions, the script g
 
 ### Examples
 
-Create new boxes for Debian, Ubuntu and CentOS distributions. Default boxes corresponding to each system will be used (see DEFAULT_*_BASIC_BOX variables in the `oh-my-box.sh` script):
+To create a new Debian box, the default Packer template corresponding to the distro name will be used (see `packer/*.json` files):
 
-	$ ./oh-my-box.sh --centos --debian --ubuntu
+	(foobar)$ ./oh-my-box.sh --debian
 
-Create new Debian box based on `foobar/debian-8.2` vagrant box (and don't keep it):
+The above commande will create a new Vagrant box `foobar/debian-jessie-ansible` using the default script parameters. To run multiple builds and remove the generated `.boxes` files, after they've been added to save disk space, do as follow:
 
-	(baz)$ ./oh-my-box.sh -x --debian=foobar/debian-8.2
-	(baz)$ vagrant box list
+	(foobar)$ ./oh-my-box.sh -x --ubuntu=baz/ubuntu-14.04 --debian=baz/debian-8.3
+	(foobar)$ vagrant box list
 
-	baz/debian-8.2-ansible    (virtualbox, 0)
+		baz/debian-8.3      (virtualbox, 0)
+		baz/ubuntu-14.04    (virtualbox, 0)
 
+## Author Information
 
-Here is an example of the script output:
-
-```
-[INFO] debian-8.2-ansible | Init Vagrantfile
-[INFO] debian-8.2-ansible | Starting and provisioning...
-Bringing machine 'default' up with 'virtualbox' provider...
-==> default: Box 'foobar/debian-8.2' could not be found. Attempting to find and install...
-    default: Box Provider: virtualbox
-    default: Box Version: >= 0
-==> default: Loading metadata for box 'foobar/debian-8.2'
-...
-...
-[INFO] debian-8.2-ansible | Packaging...
-==> default: Attempting graceful shutdown of VM...
-==> default: Clearing any previously set forwarded ports...
-==> default: Exporting VM...
-...
-==> box: Successfully added box 'abessifi/centos-7.1-ansible' (v0) for 'virtualbox'!
-[INFO] debian-8.2-ansible | Cleaning...
-==> default: Destroying VM and associated drives...
-==> default: Running cleanup tasks for 'ansible' provisioner...
-...
-[INFO] baz/debian-8.2-ansible created !
-```
-
+This tool was created in 2015 by [Ahmed Bessifi](https://www.linkedin.com/in/abessifi/).

@@ -67,7 +67,7 @@
   "post-processors": [
     {
       "type": "vagrant",
-      "output": "builds/packer_debian-{{user `debian_version`}}-amd64_{{.Provider}}.box"
+      "output": "builds/packer_debian_{{user `debian_version`}}_amd64_{{.Provider}}.box"
     }
   ]
 }

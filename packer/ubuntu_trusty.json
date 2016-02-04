@@ -66,7 +66,7 @@
   "post-processors": [
 	{
 	  "type": "vagrant",
-	  "output": "builds/packer_ubuntu-{{user `ubuntu_major_version`}}-amd64_{{.Provider}}.box"
+	  "output": "builds/packer_ubuntu_{{user `ubuntu_major_version`}}_amd64_{{.Provider}}.box"
 	}
   ]
 }

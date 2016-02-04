@@ -11,48 +11,34 @@
 #
 # DESCRIPTION:
 #   This shell script can be used to prepare some vagrant boxes (based on other
-#   vagrant boxes) to develop and test Ansible roles on different GNU/Linux
-#   distributions. Yes, Ansible roles compatibility matters !
-#
-#   The idea is to prepare basic vagrant boxes with specific Ansible
-#   and ruby versions, which can be used, for example, to run test-kitchen (see http://kitchen.ci):
-#     - Create a virtual environment
-#     - Install the Ansible role to be tested
-#     - Run ansible to provision the target environment
-#     - Run all acceptance tests (using serverspec for instance)
-#
-# NOTE:
-#   We use vagrant tool to:
-#     - Download basic boxes
-#     - Create virtual environments
-#     - Provision them using Ansible ;)
-#     - Package new boxes
-#     - Add new created boxes to the vagrant 'local repository'
+#   minimal iso images). The idea is to create and provision a minimal image with
+#   Packer and Asible then package it to a Vagrant box.
 #
 # REQUIREMENTS:
 #   - Virtualbox (tested with 5.0)
+#   - Packer (>= v0.8.6)
 #   - Vagrant (tested with v1.7)
-#   - Ansible (tested with v1.9)
 #
 # USAGE:
-#   The script gets the basic vagrant boxes name, to provision from the commande, as arguments:
-#   $ ./oh-my-box.sh -x --debian=foo/bar
+#   $ ./oh-my-box.sh [options]
 #
-#   After provisioning the VMs with specific Ansible and Ruby versions, the script generates
-#   new vagrant boxes named respectively to the input boxes name. E.g:
-#     debian/jessie64  => <system_username>/jessie64-ansible
-#     bento/centos-7.1 => <system_username>/centos-7.1-ansible
+#   After provisioning and packaging, new Vagrant boxes are generated:
+#
+#	  <system_username>/debian-jessie-ansible
+#	  <system_username>/centos-7.1-ansible
+#
 #
 
 set -e
 
-DEFAULT_DEBIAN_BASIC_BOX='debian/jessie64'
-DEFAULT_UBUNTU_BASIC_BOX='ubuntu/trusty64'
-DEFAULT_CENTOS_BASIC_BOX='bento/centos-7.1'
-DEFAULT_OPENSUSE_BASIC_BOX='bento/opensuse-13.2'
-DEFAULT_SLES_BASIC_BOX='suse/sles11sp3'
+SYSTEM_USER=$(whoami)
 
-WORKING_DIR="./.tmp/"
+DEFAULT_DEBIAN_BASIC_BOX="${SYSTEM_USER}/debian-jessie-ansible"
+DEFAULT_UBUNTU_BASIC_BOX="${SYSTEM_USER}/ubuntu-trusty-ansible"
+DEFAULT_CENTOS_BASIC_BOX="${SYSTEM_USER}/centos-7.1-ansible"
+DEFAULT_OPENSUSE_BASIC_BOX="${SYSTEM_USER}/opensuse-13.2-ansible"
+DEFAULT_SLES_BASIC_BOX="${SYSTEM_USER}/sles-11sp3-ansible"
+
 REMOVE_BASIC_BOX=false
 
 usage(){
@@ -72,7 +58,7 @@ Options:
 	exit 1
 }
 
-# NOTE: VirtualBox, Vagrant and Ansible versions aren't checked.
+# NOTE: VirtualBox, Packer and Vagrant versions aren't checked.
 # Please make sure you are using supported versions as mentioned
 # above on script doc (REQUIREMENTS section).
 is_installed(){
@@ -84,16 +70,11 @@ is_installed(){
 
 setup(){
 	# Check tools existance
-	is_installed 'VirtualBox' 'vagrant' 'ansible'
-	# Create temporary working directory
-	mkdir -p $WORKING_DIR
-	# Clean up the working directory if it exists already
-	rm -rf "${WORKING_DIR}/*"
+	is_installed 'VirtualBox' 'packer' 'vagrant'
 }
 
 teardown(){
-	# Remove the temporary working directory
-	rm -rf $WORKING_DIR
+	true
 }
 
 logger(){
@@ -102,11 +83,11 @@ logger(){
 	log_msg=$2
 	NC='\033[0m' # No Color
 	case "$log_level" in
-		INFO)
+		INFO|info)
 			msg_color='\033[0;32m';;
-		WARN)
+		WARN|warn)
 			msg_color='\033[1;33m';;
-		ERROR)
+		ERROR|error)
 			msg_color='\033[0;31m';;
 		*)
 			msg_color='\033[1;37m';;
@@ -115,41 +96,48 @@ logger(){
 	echo -e "${msg_color}[$log_level] $log_msg ${NC}"
 }
 
-build_new_box(){
-	vagrant_basic_box=$1
-	# Get basic box name
-	if [ -z $(echo "$vagrant_basic_box" | cut -d'/' -f1) ]; then
-		basic_box_name="$vagrant_basic_box"
-	else
-		basic_box_owner=$(echo "$vagrant_basic_box" | cut -d'/' -f1)
-		basic_box_name=$(echo "$vagrant_basic_box" | cut -d'/' -f2)
+build_box(){
+	box_name=$1
+	box_os_type=$2
+	logger "WARN" "Box '${box_name}' didn't exist !"
+	logger "INFO" "Start creating '${box_name}' with Packer..."
+
+	# Build the Vagrant box image with Packer
+	(cd ./packer/; packer build `ls ${box_os_type}_*.json`)
+
+	# Add the new created box
+	vagrant box add --force $box_name ./packer/builds/packer_${box_os_type}_*_amd64_virtualbox.box
+	# Remove generated .box file if '--clean' option is specified
+	if [ "$REMOVE_BASIC_BOX" = "true" ]; then
+		logger "INFO" "Clearing temporaty files..."
+		rm -rf ./packer/builds/packer_${box_os_type}_*_amd64_virtualbox.box
 	fi
 
-    new_box_owner=$(whoami)
-	new_box_name="${new_box_owner}/${basic_box_name}-ansible"
+	logger "INFO" "'$box_name' box is created !"
+}
 
-	# Init a Vagrantfile
-	logger "INFO" "${basic_box_name}-ansible | Init Vagrantfile"
-	sed "s,foo/bar,$vagrant_basic_box,g" files/Vagrantfile.template > ${WORKING_DIR}/Vagrantfile
-	cp -a ansible/ ${WORKING_DIR}/
-	# Change to the temporary working directory
-	cd $WORKING_DIR
-	# Download the basic box, start and provision it
-	logger "INFO" "${basic_box_name}-ansible | Starting and provisioning..."
-	vagrant up --provision
-	# Package the new box after provisioning
-	logger "INFO" "${basic_box_name}-ansible | Packaging..."
-	vagrant package --output "${basic_box_name}-ansible.box"
-	# Add the new created box
-	vagrant box add --force $new_box_name "${basic_box_name}-ansible.box"
-	# Clean the working directory
-	logger "INFO" "${basic_box_name}-ansible | Cleaning..."
-	vagrant destroy --force
-	rm -f Vagrantfile "${basic_box_name}-ansible.box"
-    [ "$REMOVE_BASIC_BOX" = "true" ] && vagrant box remove $vagrant_basic_box
-	# Quit the current temporary working directory
-	cd -
-	logger "INFO" "$new_box_name created !"
+checkout_box(){
+	vagrant_box=$1
+	vagrant_box_os_type=$2
+	# Get basic box name
+	if [ -z $(echo "$vagrant_box" | cut -d'/' -f1) ]; then
+		vagrant_box_name="$vagrant_box"
+		vagrant_box_owner=$(whoami)
+	else
+		vagrant_box_owner=$(echo "$vagrant_box" | cut -d'/' -f1)
+		vagrant_box_name=$(echo "$vagrant_box" | cut -d'/' -f2)
+	fi
+
+	box_name="${vagrant_box_owner}/${vagrant_box_name}"
+
+	# Check if the box is already added download/build it otherwise.
+	logger "INFO" "Check for box '${box_name}'"
+	if [ $(vagrant box list | grep -c "${box_name}") -eq 0 ]; then
+		logger "INFO" "Try downloading '$box_name' box..."
+		vagrant box add $box_name 2> /dev/null || build_box $box_name $vagrant_box_os_type
+	else
+		logger "INFO" "Box '${box_name}' exists already."
+	fi
 }
 
 #
@@ -211,7 +199,7 @@ setup
 # Loop over the basic distros and build new boxes
 for os in ${distros[@]}; do
 	vagrant_box="${os}_BASIC_BOX"
-	build_new_box ${!vagrant_box}
+	checkout_box ${!vagrant_box} $(echo $os | awk '{ print tolower($0) }')
 done
 
 # Call teardown() function
