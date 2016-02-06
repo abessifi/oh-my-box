@@ -18,3 +18,11 @@ deb:
       - libx11-6
       - libxext6
       - linux-source
+
+suse:
+  zypper:
+    basic_packages:
+      - git
+      - wget
+      - curl
+      - vim

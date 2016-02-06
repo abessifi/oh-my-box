@@ -6,7 +6,7 @@
   "provisioners": [
 	{
 	  "type": "shell",
-	  "environment_vars": [ "ANSIBLE_VERSION=1.9.2" ],
+	  "environment_vars": [ "PACKER_DISTRO_TYPE=ubuntu", "ANSIBLE_VERSION=1.9.2" ],
 	  "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
 	  "script": "scripts/setup.sh"
 	},
@@ -14,11 +14,12 @@
 	  "type": "ansible-local",
 	  "playbook_file": "ansible/provision.yml",
 	  "role_paths": [
-		"ansible/roles/common"
+		"ansible/roles/init"
 	  ]
 	},
 	{
 	  "type": "shell",
+	  "environment_vars": [ "PACKER_DISTRO_TYPE=ubuntu"],
 	  "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
 	  "script": "scripts/cleanup.sh"
 	}
@@ -57,7 +58,7 @@
 	  "vm_name": "packer-ubuntu-{{user `ubuntu_major_version`}}-amd64",
 	  "disk_size": 32768,
 	  "vboxmanage": [
-		[ "modifyvm", "{{.Name}}", "--memory", "512" ],
+		[ "modifyvm", "{{.Name}}", "--memory", "1024" ],
 		[ "modifyvm", "{{.Name}}", "--cpus", "2"]
 	  ],
 	  "output_directory": ".builders-output/"

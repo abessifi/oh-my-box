@@ -4,4 +4,4 @@
   gather_facts: yes
   sudo: yes
   roles:
-    - common
+    - init

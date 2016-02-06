@@ -97,8 +97,10 @@ logger(){
 }
 
 build_box(){
+
 	box_name=$1
 	box_os_type=$2
+
 	logger "WARN" "Box '${box_name}' didn't exist !"
 	logger "INFO" "Start creating '${box_name}' with Packer..."
 
@@ -119,6 +121,8 @@ build_box(){
 checkout_box(){
 	vagrant_box=$1
 	vagrant_box_os_type=$2
+	# Check for Packer template
+	find ./packer/${vagrant_box_os_type}_*.json &> /dev/null || ( logger "WARN" "'${vagrant_box_os_type}' distribution not yet supported !" && exit 1)
 	# Get basic box name
 	if [ -z $(echo "$vagrant_box" | cut -d'/' -f1) ]; then
 		vagrant_box_name="$vagrant_box"
