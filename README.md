@@ -1,6 +1,6 @@
 ## Description
 
-`Oh-My-Box` is a set of [Packer](www.packer.io) templates, [Ansible](www.ansible.com) playbooks and Shell scripts which can be used to prepare a bunch of [Vagrant](www.vagrantup.com) boxes (based on a minimal GNU/Linux images). `Oh-My-Box` uses Packer and Vagrant tools to:
+`Oh-My-Box` is a set of [Packer](https://www.packer.io) templates, [Ansible](http://www.ansible.com) playbooks and Shell scripts which can be used to prepare a bunch of [Vagrant](https://www.vagrantup.com) boxes (based on a minimal GNU/Linux images). `Oh-My-Box` uses Packer and Vagrant tools to:
 
 - Download a minimal image
 - Create a virtual machine (Actually, only Virtualbox provider is supported)
