@@ -46,6 +46,7 @@ After provisioning and packaging, new Vagrant boxes are generated. E.g:
     -s, --sles       Prepare a SLES box
     -u, --ubuntu     Prepare a Ubuntu box
     -x, --clean      Remove basic vagrant box after building the new one
+    -f, --force      Overwrite an existing box
     -h, --help       Show this help message and exit
 
 ### Examples

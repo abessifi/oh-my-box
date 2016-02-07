@@ -54,7 +54,7 @@ Options:
     -s, --sles       Prepare a SLES box
     -u, --ubuntu     Prepare a Ubuntu box
     -x, --clean      Remove basic vagrant box after building new one
-	-f, --force      Overwrite an existing box
+    -f, --force      Overwrite an existing box
     -h, --help       Show this help message and exit
 	"
 	exit 1
