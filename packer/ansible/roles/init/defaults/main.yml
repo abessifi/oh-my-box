@@ -19,6 +19,18 @@ deb:
       - libxext6
       - linux-source
 
+el:
+  yum:
+    basic_packages:
+      - git
+      - wget
+      - curl
+      - vim
+    unneeded_packages:
+      - cpp
+      - kernel-devel
+      - kernel-headers
+
 suse:
   zypper:
     basic_packages:

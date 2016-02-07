@@ -13,23 +13,25 @@ debian_common(){
 	apt-get install -y sudo python-dev python-pip
 }
 
-common_actions(){
-	# Add vagrant user to sudoers.
-	echo "vagrant        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
-	chmod 440 /etc/sudoers.d/vagrant
-	sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
-
-	# Install Ansible
-	yes | pip install markupsafe ansible==$ANSIBLE_VERSION
+el_common(){
+	# Install Python Installer Package
+	yum -y install epel-release
+	yum -y install gcc gcc-c++ patch libyaml-devel autoconf readline-devel zlib-devel libffi-devel openssl-devel automake libtool bison
+	yum -y install python-devel python-pip
 }
 
+# Add vagrant user to sudoers.
+echo "vagrant        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
+chmod 440 /etc/sudoers.d/vagrant
+sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
+# Do specific actions depending on distro type
 case "$PACKER_DISTRO_TYPE" in
-	opensuse) suse_common;;
-	suse) suse_common;;
-	debian) debian_common;;
-	ubuntu) debian_common;;
+	opensuse|suse) suse_common;;
+	debian|ubuntu) debian_common;;
+	centos) el_common;;
 	*) echo "[ERROR] Unknown PACKER_DISTRO_TYPE value";
 	   exit 1;;
 esac
+# Install Ansible
+yes | pip install markupsafe ansible==$ANSIBLE_VERSION
 
-common_actions

@@ -19,7 +19,7 @@
 	},
 	{
 	  "type": "shell",
-	  "environment_vars": [ "PACKER_DISTRO_TYPE=ubuntu"],
+	  "environment_vars": [ "PACKER_DISTRO_TYPE=ubuntu" ],
 	  "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
 	  "script": "scripts/cleanup.sh"
 	}

@@ -18,7 +18,7 @@
 	},
 	{
 	  "type": "shell",
-      "environment_vars": [ "PACKER_DISTRO_TYPE=opensuse"],
+      "environment_vars": [ "PACKER_DISTRO_TYPE=opensuse" ],
 	  "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
 	  "script": "scripts/cleanup.sh"
 	}
@@ -48,6 +48,7 @@
       "shutdown_command": "echo 'vagrant'|sudo -S /sbin/shutdown -hP now",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "virtualbox_version_file": ".vbox_version",
+      "vm_name": "packer-opensuse-{{user `opensuse_version`}}-amd64",
       "disk_size": 32768,
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "1024" ],

@@ -1,0 +1,64 @@
+{
+  "variables": {
+    "centos_version": "7"
+  },
+  "provisioners": [
+    {
+      "type": "shell",
+      "environment_vars": [ "PACKER_DISTRO_TYPE=centos", "ANSIBLE_VERSION=1.9.2" ],
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "script": "scripts/setup.sh"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "ansible/provision.yml",
+      "role_paths": [
+        "ansible/roles/init"
+      ]
+    },
+    {
+      "type": "shell",
+      "environment_vars": [ "PACKER_DISTRO_TYPE=centos" ],
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "script": "scripts/cleanup.sh"
+    }
+  ],
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/centos_{{user `centos_version`}}_kickstart.cfg<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "guest_os_type": "RedHat_64",
+      "headless": true,
+      "http_directory": "http",
+      "iso_urls": [
+        "CentOS-{{user `centos_version`}}-x86_64-Minimal-1511.iso",
+        "http://centos.mirrors.hoobly.com/{{user `centos_version`}}/isos/x86_64/CentOS-{{user `centos_version`}}-x86_64-Minimal-1511.iso"
+      ],
+      "iso_checksum_type": "md5",
+      "iso_checksum": "88c0437f0a14c6e2c94426df9d43cd67",
+      "ssh_username": "vagrant",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/halt -h -p",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "virtualbox_version_file": ".vbox_version",
+      "vm_name": "packer-centos-{{user `centos_version`}}-amd64",
+      "disk_size": 32768,
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "1024" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
+      ],
+	  "output_directory": ".builders-output/"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "builds/packer_centos_{{user `centos_version`}}_amd64_{{.Provider}}.box"
+    }
+  ]
+}

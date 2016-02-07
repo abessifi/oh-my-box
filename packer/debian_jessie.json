@@ -18,7 +18,7 @@
 	},
 	{
 	  "type": "shell",
-	  "environment_vars": [ "PACKER_DISTRO_TYPE=debian"],
+	  "environment_vars": [ "PACKER_DISTRO_TYPE=debian" ],
 	  "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
 	  "script": "scripts/cleanup.sh"
 	}
