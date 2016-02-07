@@ -40,6 +40,7 @@ DEFAULT_OPENSUSE_BASIC_BOX="${SYSTEM_USER}/opensuse-13.2-ansible"
 DEFAULT_SLES_BASIC_BOX="${SYSTEM_USER}/sles-11sp3-ansible"
 
 REMOVE_BASIC_BOX=false
+OVERWRITE_EXISTING_BOX=false
 
 usage(){
 
@@ -53,6 +54,7 @@ Options:
     -s, --sles       Prepare a SLES box
     -u, --ubuntu     Prepare a Ubuntu box
     -x, --clean      Remove basic vagrant box after building new one
+	-f, --force      Overwrite an existing box
     -h, --help       Show this help message and exit
 	"
 	exit 1
@@ -101,7 +103,6 @@ build_box(){
 	box_name=$1
 	box_os_type=$2
 
-	logger "WARN" "Box '${box_name}' didn't exist !"
 	logger "INFO" "Start creating '${box_name}' with Packer..."
 
 	# Build the Vagrant box image with Packer
@@ -138,10 +139,11 @@ checkout_box(){
 	logger "INFO" "Check for box '${box_name}'"
 	if [ $(vagrant box list | grep -c "${box_name}") -eq 0 ]; then
 		logger "INFO" "Try downloading '$box_name' box..."
-		vagrant box add $box_name 2> /dev/null || build_box $box_name $vagrant_box_os_type
 	else
-		logger "INFO" "Box '${box_name}' exists already."
+		logger "WARN" "Box '${box_name}' exists already."
+		[ "$OVERWRITE_EXISTING_BOX" = "false" ] && exit 0
 	fi
+	vagrant box add $box_name 2> /dev/null || build_box $box_name $vagrant_box_os_type
 }
 
 #
@@ -152,7 +154,7 @@ checkout_box(){
 [ $# -eq 0  ] && usage
 
 # Execute getopt
-ARGS=$(getopt -o c::d::o::s::u::xh -l "centos::,debian::,opensuse::,sles::,ubuntu::,clean,help" -n "$0" -- "$@") || usage
+ARGS=$(getopt -o c::d::o::s::u::xfh -l "centos::,debian::,opensuse::,sles::,ubuntu::,clean,force,help" -n "$0" -- "$@") || usage
 eval set -- "$ARGS"
 
 distros=()
@@ -187,6 +189,9 @@ while true; do
 			shift;;
         -x|--clean)
             REMOVE_BASIC_BOX=true
+            shift;;
+        -f|--force)
+            OVERWRITE_EXISTING_BOX=true
             shift;;
         -h|--help)
             usage
