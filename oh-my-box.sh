@@ -64,15 +64,20 @@ Options:
 # Please make sure you are using supported versions as mentioned
 # above on script doc (REQUIREMENTS section).
 is_installed(){
+	# If failure, don't return immediately;
+	# Check requirements once for all.
+	ret_code=0
 
 	for tool_name in $@; do
-		[ `which $tool_name` ] || echo "'$tool_name' is not installed !" || exit 1
+		[ `which $tool_name` ] || (echo "'$tool_name' is not installed !"; ret_code=1)
 	done
+
+	return $ret_code
 }
 
 setup(){
 	# Check tools existance
-	is_installed 'VirtualBox' 'packer' 'vagrant'
+	is_installed 'VirtualBox' 'packer' 'vagrant' || exit $?
 }
 
 teardown(){
