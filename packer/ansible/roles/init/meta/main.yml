@@ -6,14 +6,20 @@ galaxy_info:
   description: Debian/Ubuntu configuration for Packer.
   company: "Midwestern Mac, LLC"
   license: "license (BSD, MIT)"
-  min_ansible_version: 1.4
+  min_ansible_version: 1.9
   platforms:
   - name: Debian
     versions:
-    - all
+      - all
   - name: Ubuntu
     versions:
-    - all
+      - all
+  - name: CentOS
+    versions:
+      - 7.0
+  - name: openSuse
+    versions:
+      - 13.2
   categories:
     - cloud
     - system
