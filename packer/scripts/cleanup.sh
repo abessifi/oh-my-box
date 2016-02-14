@@ -11,6 +11,15 @@ debian_common(){
 
 suse_common(){
 	rm -rf /home/vagrant/bin
+	# backlist i2c_piix4 - VirtualBox has no smbus
+	echo "blacklist i2c_piix4" > /etc/modprobe.d/100-blacklist-i2c_piix4.conf
+	# restore the old way Kernel/modules/udev rename ethernet interfaces
+	sed -i 's/^GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"/g' /etc/default/grub
+	# rebuild the initrd
+	mkinitrd
+	# copy the network scripts
+	[ -f  /etc/sysconfig/network/ifcfg-enp0s3 ] && mv /etc/sysconfig/network/ifcfg-enp0s3 /etc/sysconfig/network/ifcfg-eth0 || true
+
 }
 
 el_common(){
