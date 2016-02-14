@@ -1,0 +1,40 @@
+---
+
+- name: "Ckeck if RVM is installed"
+  shell: "which rvm"
+  ignore_errors: true
+  register: which_rvm
+
+- name: "Ubuntu | purge default ruby version"
+  apt: name=ruby state=absent
+  when: ansible_distribution == 'Ubuntu' and not which_rvm.stdout
+
+- name: "Install RVM stable with ruby"
+  shell: "gpg --keyserver {{ ruby.rvm_gpg_server }} --recv-keys {{ ruby.rvm_gpg_key }}"
+  when: not which_rvm.stdout
+
+- name: "Checkout RVM install script"
+  get_url:
+    url: "{{ ruby.rvm_install_script }}"
+    dest: "/tmp/rvm_install.sh"
+  when: not which_rvm.stdout
+
+- name: "Install stable ruby version"
+  shell: "bash /tmp/rvm_install.sh stable --ruby"
+  when: not which_rvm.stdout
+
+- name: "Run RVM script"
+  shell: "source /home/vagrant/.rvm/scripts/rvm"
+  args:
+    executable: /bin/bash
+  when: not which_rvm.stdout
+
+# - name: "Add Ruby to default PATH"
+#   shell: "ln -sf $(which ruby) /usr/bin/ruby"
+#   sudo: yes
+
+- name: "Remove RVM install script"
+  file:
+    path: /tmp/rvm_install.sh
+    state: absent
+  when: not which_rvm.stdout

@@ -24,6 +24,20 @@ For instance, the idea may be to prepare a basic Vagrant boxes with specific `An
 - Run Ansible to provision the target environment
 - Run all acceptance tests (using [serverspec](http://serverspec.org/) for instance)
 
+To activate Ruby installation, set the Ansible variable `install_ruby` to `yes` within the Packer template that corresponds to the GNU/Linux image you want to provision:
+
+    ...
+    {
+      "type": "ansible-local",
+      "playbook_file": "ansible/provision.yml",
+      "role_paths": [
+        "ansible/roles/init"
+      ],
+      "extra_arguments": [
+        "--extra-vars={'install_ruby':'yes'}"
+      ]
+    },
+    ...
 
 ## Usage
 
