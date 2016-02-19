@@ -69,15 +69,92 @@ is_installed(){
 	ret_code=0
 
 	for tool_name in $@; do
-		[ `which $tool_name` ] || (echo "'$tool_name' is not installed !"; ret_code=1)
+		if [ ! `which $tool_name` ]
+		then
+			logger "ERROR" "'$tool_name' is not installed !"
+			ret_code=1
+		fi
 	done
+	
+	return $ret_code
+}
 
+get_vboxver() {
+	vboxmanage --version | sed 's#^\(\([0-9]\.\?\)*[0-9]\).*#\1#'
+}
+
+get_packerver() {
+	packer --version
+}
+
+get_vagrantver() {
+	vagrant --version | cut -d ' ' -f2
+}
+
+# Reconize numeric-dotted format only.
+isver() {
+	if [ $# -ne 1 ]
+	then
+		echo "usage: isver version"
+		exit 1
+	fi
+
+	echo -n "$1" | grep -c '^\([0-9]\.\?\)*[0-9]$'
+}
+
+vcmp() {
+	if [ $# -ne 2 ]
+	then
+		echo "usage: $0 v1 v2"
+		exit 1
+	fi
+	if [ `isver "$1"` -eq 0 -o `isver "$2"` -eq 0 ]
+	then
+		echo "bad version number."
+		exit 2
+	fi
+	
+	ver_sort=`echo -e "$1\n$2" | sort -V`
+	vcmp_ret=2 # v1>v2
+	if [ `echo "$ver_sort" | uniq -d | wc -l` -eq 1 ]
+	then
+		vcmp_ret=1 # v1=v2
+	elif [ `echo "$ver_sort" | head -1` = "$1" ]
+	then
+		vcmp_ret=0 # v1<v2
+	fi
+	
+	echo $vcmp_ret
+}
+
+requirements_met() {
+	packer_ver=`get_packerver`
+	vagrant_ver=`get_vagrantver`
+	vbox_ver=`get_vboxver`
+	
+	ret_code=0
+	if [ `vcmp "$packer_ver" "0.8.6"` -lt 1 ]
+	then
+		logger "ERROR" "Requirement: Packer: ver. \`($packer_ver >= 0.8.6)' failed."
+		ret_code=1
+	fi
+	if [ `vcmp "$vagrant_ver" "1.7"` -lt 1 ]
+	then
+		logger "ERROR" "Requirement: Vagrant: ver. \`($vagrant_ver >= 1.7)' failed."
+		ret_code=1
+	fi
+	if [ `vcmp "$vbox_ver" "5.0"` -lt 1 ]
+	then
+		logger "WARN" "Recommanded: Virtualbox: ver. \`($vbox_ver >= 5.0)' failed."
+	fi
+	
 	return $ret_code
 }
 
 setup(){
 	# Check tools existance
 	is_installed 'VirtualBox' 'packer' 'vagrant' || exit $?
+	requirements_met || exit $?
 }
 
 teardown(){
@@ -218,3 +295,5 @@ done
 
 # Call teardown() function
 teardown
+
+# vim: set ts=4 sw=4 noet:
