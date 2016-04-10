@@ -34,7 +34,7 @@ To activate Ruby installation, set the Ansible variable `install_ruby` to `yes` 
         "ansible/roles/init"
       ],
       "extra_arguments": [
-        "--extra-vars={'install_ruby':'yes'}"
+        "--extra-vars='{\"install_ruby\":\"yes\"}'"
       ]
     },
     ...
@@ -74,8 +74,8 @@ The above commande will create a new Vagrant box `foobar/debian-jessie-ansible` 
 	(foobar)$ ./oh-my-box.sh -x --ubuntu=baz/ubuntu-14.04 --debian=baz/debian-8.3
 	(foobar)$ vagrant box list
 
-		baz/debian-8.3      (virtualbox, 0)
-		baz/ubuntu-14.04    (virtualbox, 0)
+		baz/debian-8.3-ansible      (virtualbox, 0)
+		baz/ubuntu-14.04-ansible    (virtualbox, 0)
 
 ## Author Information
 
