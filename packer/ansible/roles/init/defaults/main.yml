@@ -1,44 +1,5 @@
 ---
 
-deb:
-  apt:
-    basic_packages:
-      - git
-      - wget
-      - curl
-      - vim
-    unneeded_packages:
-      - ppp
-      - pppconfig
-      - pppoeconf
-      - libx11-data
-      - xauth
-      - libxmuu1
-      - libxcb1
-      - libx11-6
-      - libxext6
-      - linux-source
-
-el:
-  yum:
-    basic_packages:
-      - git
-      - wget
-      - curl
-      - vim
-    unneeded_packages:
-      - cpp
-      - kernel-devel
-      - kernel-headers
-
-suse:
-  zypper:
-    basic_packages:
-      - git
-      - wget
-      - curl
-      - vim
-
 ruby:
   rvm_gpg_server: 'hkp://keys.gnupg.net'
   rvm_gpg_key: '409B6B1796C275462A1703113804BB82D39DC0E3'

@@ -1,40 +1,54 @@
 ---
 
 - name: "Ckeck if RVM is installed"
-  shell: "which rvm"
-  ignore_errors: true
-  register: which_rvm
+  stat:
+    path: "/home/vagrant/.rvm/bin/rvm"
+  register: rvm_bin
 
 - name: "Ubuntu | purge default ruby version"
   apt: name=ruby state=absent
-  when: ansible_distribution == 'Ubuntu' and not which_rvm.stdout
+  when: ansible_distribution == 'Ubuntu'
 
 - name: "Install RVM stable with ruby"
   shell: "gpg --keyserver {{ ruby.rvm_gpg_server }} --recv-keys {{ ruby.rvm_gpg_key }}"
-  when: not which_rvm.stdout
+  when: not rvm_bin.stat.exists
 
 - name: "Checkout RVM install script"
   get_url:
     url: "{{ ruby.rvm_install_script }}"
     dest: "/tmp/rvm_install.sh"
-  when: not which_rvm.stdout
+  when: not rvm_bin.stat.exists
 
 - name: "Install stable ruby version"
   shell: "bash /tmp/rvm_install.sh stable --ruby"
-  when: not which_rvm.stdout
+  when: not rvm_bin.stat.exists
 
 - name: "Run RVM script"
   shell: "source /home/vagrant/.rvm/scripts/rvm"
   args:
     executable: /bin/bash
-  when: not which_rvm.stdout
+  when: not rvm_bin.stat.exists
 
-# - name: "Add Ruby to default PATH"
-#   shell: "ln -sf $(which ruby) /usr/bin/ruby"
-#   sudo: yes
+- name: get current ruby version
+  shell: "/home/vagrant/.rvm/bin/rvm current"
+  register: current_ruby_version
+  when: not rvm_bin.stat.exists
+
+- name: "Add ruby/gem/rake bins to default PATH"
+  file:
+    src: "/home/vagrant/.rvm/rubies/{{ current_ruby_version.stdout }}/bin/{{ item }}"
+    dest: "/usr/bin/{{ item }}"
+    state: link
+    force: yes
+  with_items:
+    - ruby
+    - gem
+    - rake
+  become_user: root
+  when: not rvm_bin.stat.exists
 
 - name: "Remove RVM install script"
   file:
     path: /tmp/rvm_install.sh
     state: absent
-  when: not which_rvm.stdout
+  when: not rvm_bin.stat.exists
