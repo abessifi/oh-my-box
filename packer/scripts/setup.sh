@@ -33,5 +33,5 @@ case "$PACKER_DISTRO_TYPE" in
 	   exit 1;;
 esac
 # Install Ansible
-yes | pip install markupsafe ansible==$ANSIBLE_VERSION
+yes | pip install httplib2 markupsafe ansible==$ANSIBLE_VERSION
 

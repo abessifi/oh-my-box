@@ -15,7 +15,10 @@
 	  "playbook_file": "ansible/provision.yml",
 	  "role_paths": [
 		"ansible/roles/init"
-	  ]
+	  ],
+      "extra_arguments": [
+        "--extra-vars='{\"install_ruby\":\"yes\"}'"
+      ]
 	},
 	{
 	  "type": "shell",
