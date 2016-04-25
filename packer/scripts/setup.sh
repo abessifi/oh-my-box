@@ -15,7 +15,7 @@ debian_common(){
 
 el_common(){
 	# Install Python Installer Package
-	yum -y install epel-release
+	yum -y install epel-release net-tools htop
 	yum -y install gcc gcc-c++ patch libyaml-devel autoconf readline-devel zlib-devel libffi-devel openssl-devel automake libtool bison
 	yum -y install python-devel python-pip
 }
