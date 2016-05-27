@@ -5,7 +5,7 @@
   "provisioners": [
     {
       "type": "shell",
-      "environment_vars": [ "PACKER_DISTRO_TYPE=centos", "ANSIBLE_VERSION=1.9.2" ],
+      "environment_vars": [ "PACKER_DISTRO_TYPE=centos", "ANSIBLE_VERSION=1.9.2", "PACKER_PLATFROM_TYPE=vagrant" ],
       "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
       "script": "scripts/setup.sh"
     },

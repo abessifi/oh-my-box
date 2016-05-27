@@ -1,0 +1,24 @@
+{
+    "builders":[{
+        "type": "docker",
+        "image": "debian",
+        "export_path": "debian.tar"
+    }],
+    "provisioners":[
+        {
+            "type": "shell",
+            "inline": [
+                "apt-get -y update",
+                "apt-get install -y python-pip python-dev",
+                "pip install ansible"
+            ]
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "docker-import",
+            "repository": "debera/ian-ansible",
+            "tag": "0.1"
+        }
+    ]
+}

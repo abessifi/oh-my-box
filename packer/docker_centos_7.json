@@ -1,0 +1,21 @@
+{
+    "builders":[{
+        "type": "docker",
+        "image": "centos:7",
+        "export_path": "/home/abessifi/Downloads/docker-centos-7.tar"
+    }],
+    "provisioners":[
+        {
+            "type": "shell",
+			"environment_vars": [ "PACKER_DISTRO_TYPE=centos", "ANSIBLE_VERSION=1.9.2", "PACKER_PLATFROM_TYPE=docker" ],
+			"script": "scripts/setup.sh"
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "docker-import",
+            "repository": "abessifi/centos-7-ansible",
+            "tag": "0.1"
+        }
+    ]
+}

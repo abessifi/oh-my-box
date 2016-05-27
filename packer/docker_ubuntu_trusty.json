@@ -1,0 +1,25 @@
+{
+    "builders":[{
+        "type": "docker",
+        "image": "ubuntu",
+		"pull": true,
+        "export_path": "image.tar"
+    }],
+    "provisioners":[
+        {
+            "type": "shell",
+            "inline": [
+                "apt-get -y update",
+                "apt-get install -y python-pip python-dev",
+                "pip install ansible"
+            ]
+        }
+    ],
+    "post-processors": [
+        {
+            "type": "docker-import",
+            "repository": "foo/bar-ansible",
+            "tag": "0.1"
+        }
+    ]
+}
