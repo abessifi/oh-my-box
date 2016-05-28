@@ -1,25 +1,26 @@
 ## Description
 
-`Oh-My-Box` is a set of [Packer](https://www.packer.io) templates, [Ansible](http://www.ansible.com) playbooks and Shell scripts which can be used to prepare a bunch of [Vagrant](https://www.vagrantup.com) boxes (based on a minimal GNU/Linux images). `Oh-My-Box` uses Packer and Vagrant tools to:
+`Oh-My-Box` is a set of [Packer](https://www.packer.io) templates, [Ansible](http://www.ansible.com) playbooks and Shell scripts which can be used to prepare a bunch of [Vagrant](https://www.vagrantup.com) and [Docker](https://www.docker.com) boxes/images (based on a minimal GNU/Linux images). `Oh-My-Box` uses Packer and Vagrant/Docker tools to:
 
 - Download a minimal image
-- Create a virtual machine (Actually, only Virtualbox provider is supported)
+- Create a virtualbox machine or a docker container
 - Provision it using Ansible
-- Package the VM to a new Vagrant box
-- Add the new created box to the Vagrant local repository
+- Package the VM to a new Vagrant box (commit the container is the plateform is Docker)
+- Add the new created box/image to the Vagrant/Docker local repository
 
 ## Requirements
 
 - Virtualbox (tested with 5.0)
-- Packer (>= v0.8.6)
-- Vagrant (>= v1.7)
+- Packer  ( >= v0.8.6 )
+- Vagrant ( >= v1.7 )
+- Docker  ( >= v1.10 )
 
 ## Test case
 
-The created boxes can be used, for example, to develop and test Ansible roles on different `GNU/Linux` distributions. Yes, Ansible roles compatibility matters !
-For instance, the idea may be to prepare a basic Vagrant boxes with specific `Ansible` and `Ruby` versions which can be used, for example, to run acceptance tests against the Ansible role using [test-kitchen](http://kitchen.ci):
+The created boxes/images can be used, for example, to develop and test Ansible roles on different `GNU/Linux` distributions. Yes, Ansible roles compatibility matters !
+For instance, the idea may be to prepare a basic Vagrant/Docker boxes/images with specific `Ansible` and `Ruby` versions which can be used, for example, to run acceptance tests against the Ansible role using [test-kitchen](http://kitchen.ci):
 
-- Create a virtual environment
+- Create a virtualbox machine or a docker container
 - Install the Ansible role to be tested
 - Run Ansible to provision the target environment
 - Run all acceptance tests (using [serverspec](http://serverspec.org/) for instance)
@@ -41,16 +42,24 @@ To activate Ruby installation, set the Ansible variable `install_ruby` to `yes` 
 
 ## Usage
 
-If the boxes you want to use exist already in the [Vagrant Cloud](https://atlas.hashicorp.com/boxes/search?vagrantcloud), just run the script `oh-my-box.sh` which gets their names from the script arguments and checks them out.
+If the Vagrant boxes or the Docker images you want to use exist already in the [Vagrant Cloud](https://atlas.hashicorp.com/boxes/search?vagrantcloud) or in the [official Dockerhub registry](https://hub.docker.com/), just run the script `oh-my-box.sh` which gets their names from the script arguments and checks them out.
 
-Otherwise, if the boxes list didn't exist, `oh-my-box` will create them for you based on the specified distros names.
+Otherwise, if the boxes/images list didn't exist, `oh-my-box` will create them for you regarding the specified distros names.
 
 	$ ./oh-my-box.sh [options]
 
-After provisioning and packaging, new Vagrant boxes are generated. E.g:
+After provisioning and packaging, the new artifacts (boxes or images) are generated. E.g:
 
-	<system_username>/debian-jessie-ansible
-	<system_username>/centos-7.1-ansible
+	$ vagrant box list
+
+	<username>/debian-jessie-ansible
+	<username>/centos-7.1-ansible
+
+	$ docker images --format "table {{.Repository}}\t{{.Tag}}" | awk '$1 ~ /<username>/ { print }'
+
+	REPOSITORY                  		TAG
+	<username>/debian-jessie-ansible	latest
+	<username>/centos-7.1-ansible		latest
 
 ### Options
 
@@ -59,6 +68,8 @@ After provisioning and packaging, new Vagrant boxes are generated. E.g:
     -o, --opensuse   Prepare an OpenSUSE box
     -s, --sles       Prepare a SLES box
     -u, --ubuntu     Prepare a Ubuntu box
+    -p, --platform   [vagrant|docker]
+                     Prepare a box/image for Vagrant or Docker tools
     -x, --clean      Remove basic vagrant box after building the new one
     -f, --force      Overwrite an existing box
     -h, --help       Show this help message and exit
@@ -69,13 +80,25 @@ To create a new Debian box, the default Packer template corresponding to the dis
 
 	(foobar)$ ./oh-my-box.sh --debian
 
-The above commande will create a new Vagrant box `foobar/debian-jessie-ansible` using the default script parameters. To run multiple builds and remove the generated `.boxes` files, after they've been added to save disk space, do as follow:
+The above commande will create a new Vagrant box `foobar/debian-jessie-ansible` using the default script parameters.
+
+Note that we didn't specify the `--platform` option because by default generated artifact is a Vagrant box. To run multiple builds and remove the generated `.boxes` files, after they've been added to save disk space, do as follow:
 
 	(foobar)$ ./oh-my-box.sh -x --ubuntu=baz/ubuntu-14.04 --debian=baz/debian-8.3
 	(foobar)$ vagrant box list
 
-		baz/debian-8.3-ansible      (virtualbox, 0)
-		baz/ubuntu-14.04-ansible    (virtualbox, 0)
+	baz/debian-8.3-ansible      (virtualbox, 0)
+	baz/ubuntu-14.04-ansible    (virtualbox, 0)
+
+In the other hand, to build a Docker images for CentOS, you can run the following command:
+
+	(foobar)$ ./oh-my-box.sh --platform=docker --centos=centos-7-ansible:0.1
+	(foobar)$ docker images
+
+	REPOSITORY                  TAG
+	abessifi/centos-7-ansible   0.1
+
+Note, in the above command if you didn't mention the image tag `0.1`, the tag `latest` will be used as default.
 
 ## Author Information
 

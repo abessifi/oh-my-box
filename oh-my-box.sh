@@ -27,8 +27,8 @@
 #
 #   After provisioning and packaging, new Vagrant/Docker boxes/images are generated:
 #
-#	  <system_username>/debian-jessie-ansible
-#	  <system_username>/centos-7.1-ansible
+#	  <username>/debian-jessie-ansible
+#	  <username>/centos-7.1-ansible
 #
 #
 
