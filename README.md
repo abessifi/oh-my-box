@@ -96,7 +96,7 @@ In the other hand, to build a Docker images for CentOS, you can run the followin
 	(foobar)$ docker images
 
 	REPOSITORY                  TAG
-	abessifi/centos-7-ansible   0.1
+	foobar/centos-7-ansible     0.1
 
 Note, in the above command if you didn't mention the image tag `0.1`, the tag `latest` will be used as default.
 
