@@ -1,5 +1,7 @@
 #!/bin/bash -eux
 
+set -e
+
 suse_common(){
 	# remove zypper package locks
 	rm -f /etc/zypp/locks
@@ -15,17 +17,28 @@ debian_common(){
 
 el_common(){
 	# Install Python Installer Package
-	yum -y install epel-release net-tools
+	yum -y install sudo epel-release net-tools
 	yum -y install gcc gcc-c++ patch libyaml-devel autoconf readline-devel zlib-devel libffi-devel openssl-devel automake libtool bison
 	yum -y install nano htop less python-devel python-pip
 }
 
-if [ "$PACKER_PLATFROM_TYPE" -eq 'vagrant' ]; then
-	# Add vagrant user to sudoers.
-	echo "vagrant        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
-	chmod 440 /etc/sudoers.d/vagrant
+setup(){
+
+	# Grant 'sudo' to 'vargant' user
+	if [ "$PACKER_PLATFROM_TYPE" = 'vagrant' ]; then
+		# Add vagrant user to sudoers.
+		echo "vagrant        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers.d/vagrant
+		chmod 440 /etc/sudoers.d/vagrant
+	fi
+
+	# Disable 'requiretty' when 'sudo' if called
 	sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
-fi
+
+	# Install Ansible
+	yes | pip install httplib2 markupsafe ansible==$ANSIBLE_VERSION
+
+}
+
 
 # Do specific actions depending on distro type
 case "$PACKER_DISTRO_TYPE" in
@@ -36,6 +49,4 @@ case "$PACKER_DISTRO_TYPE" in
 	   exit 1;;
 esac
 
-# Install Ansible
-yes | pip install httplib2 markupsafe ansible==$ANSIBLE_VERSION
-
+setup
