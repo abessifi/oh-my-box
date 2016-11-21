@@ -2,7 +2,7 @@
     "builders":[{
         "type": "docker",
         "image": "centos:7",
-        "export_path": "/home/abessifi/Downloads/docker-centos-7.tar"
+        "commit": true
     }],
     "provisioners":[
         {

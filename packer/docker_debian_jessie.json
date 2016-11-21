@@ -2,7 +2,7 @@
     "builders":[{
         "type": "docker",
         "image": "debian",
-        "export_path": "debian.tar"
+        "commit": true
     }],
     "provisioners":[
         {

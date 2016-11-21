@@ -45,6 +45,7 @@ DEFAULT_SLES_BASIC_BOX="${SYSTEM_USER}/sles-11sp3-ansible"
 
 # Default Docker base images
 DEFAULT_CENTOS_BASIC_IMG='centos:7'
+DEFAULT_UBUNTU_BASIC_IMG='ubuntu:trusty'
 
 REMOVE_BASIC_BOX=false
 OVERWRITE_EXISTING_ARTIFACT=false
@@ -355,6 +356,7 @@ while true; do
 			shift
 			distros+=('UBUNTU')
 			[ -n "$1" ] && UBUNTU_BASIC_BOX="$1" || UBUNTU_BASIC_BOX="$DEFAULT_UBUNTU_BASIC_BOX"
+			[ -n "$1" ] && UBUNTU_BASIC_IMG="$1" || UBUNTU_BASIC_IMG="$DEFAULT_UBUNTU_BASIC_IMG"
 			shift;;
 		-p|--platform)
 			case "$2" in

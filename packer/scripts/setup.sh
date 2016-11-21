@@ -12,14 +12,17 @@ suse_common(){
 debian_common(){
 	# Install Python Installer Package
 	apt-get -y update
-	apt-get install -y sudo python-dev python-pip
+	apt-get install -y sudo nano htop less curl build-essential libffi-dev libyaml-dev python-dev libssl-dev
+	apt-get -y purge python-cffi
+	# Install pip
+	curl -sSL https://bootstrap.pypa.io/get-pip.py | python
 }
 
 el_common(){
 	# Install Python Installer Package
 	yum -y install sudo epel-release net-tools
 	yum -y install gcc gcc-c++ patch libyaml-devel autoconf readline-devel zlib-devel libffi-devel openssl-devel automake libtool bison
-	yum -y install nano htop less python-devel python-pip
+	yum -y install nano htop less curl python-devel python-pip
 }
 
 setup(){
@@ -33,12 +36,10 @@ setup(){
 
 	# Disable 'requiretty' when 'sudo' if called
 	sed -i "s/^.*requiretty/#Defaults requiretty/" /etc/sudoers
-
 	# Install Ansible
 	yes | pip install httplib2 markupsafe ansible==$ANSIBLE_VERSION
 
 }
-
 
 # Do specific actions depending on distro type
 case "$PACKER_DISTRO_TYPE" in

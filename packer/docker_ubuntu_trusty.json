@@ -1,24 +1,20 @@
 {
     "builders":[{
         "type": "docker",
-        "image": "ubuntu",
-		"pull": true,
-        "export_path": "image.tar"
+        "image": "ubuntu:trusty",
+        "commit": true
     }],
     "provisioners":[
         {
             "type": "shell",
-            "inline": [
-                "apt-get -y update",
-                "apt-get install -y python-pip python-dev",
-                "pip install ansible"
-            ]
+            "environment_vars": [ "PACKER_DISTRO_TYPE=ubuntu", "ANSIBLE_VERSION=2.0.0.2", "PACKER_PLATFROM_TYPE=docker" ],
+            "script": "scripts/setup.sh"
         }
     ],
     "post-processors": [
         {
             "type": "docker-import",
-            "repository": "foo/bar-ansible",
+            "repository": "abessifi/ubuntu-trusty-ansible",
             "tag": "0.1"
         }
     ]
